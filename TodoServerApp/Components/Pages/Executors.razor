@@ -1,0 +1,62 @@
+﻿@page "/executors"
+@rendermode InteractiveServer
+@inject IExecutorsDataService data
+@inject NavigationManager navigate
+@attribute [Authorize]
+
+<PageTitle>Исполнители</PageTitle>
+<h1>Список исполнителей</h1>
+
+<div class="container">
+    @if (executors == null)
+    {
+        <tr>
+            <td colspan="5">Loading...</td>
+        </tr>
+    }
+    else
+    {
+        <div class="btn-group m-2">
+            <button class="btn btn-primary" @onclick="AddExecutor">Добавить исполнителя</button>
+        </div>
+        <div class="card">     
+        @foreach (var executor in executors)
+        {
+           <tr>
+                    <div class="card">
+                        <div class="card-header">
+                            @executor.Surname @executor.Name
+                        </div>
+                        <div class="card-body">
+                            <p> ID : @executor.Id</p>
+                        </div>
+                        <div class="card-footer">
+                            <a class="btn btn-primary" href="executor/@executor.Id">Изменить</a>
+                            <button class="btn btn-primary" @onclick="async () => await DeleteExecutor(executor.Id)">Удалить</button>
+                        </div>
+                    </div>
+           </tr>
+        }
+        </div>
+    }
+</div>
+
+@code {
+    IEnumerable<ExecutorsItem>? executors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        executors = await data.GetAllAsync();
+    }
+    
+    void AddExecutor()
+    {
+        navigate.NavigateTo("executor/add");
+    }
+    async Task DeleteExecutor(int id)
+    {
+        await data.DeleteAsync(id);
+        executors = await data.GetAllAsync();
+    }
+}

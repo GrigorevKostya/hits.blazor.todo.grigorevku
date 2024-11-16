@@ -1,0 +1,59 @@
+﻿@page "/executor/add"
+@page "/executor/{Id:int}"
+@inject IExecutorsDataService data
+@inject NavigationManager navigate
+@if (ExecutorItem != null)
+{
+    <EditForm Model="ExecutorItem" FormName="ExecutorForm" OnValidSubmit="ValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <h2>Добавить исполнителя</h2>
+        <InputNumber @bind-Value="ExecutorItem.Id" hidden />
+        <div class="form-group d-flex justify-content-between m-2">
+            <label class="col-form-label col-3">Фамилия</label>
+            <InputText @bind-Value="ExecutorItem.Surname" class="form-control" />
+            <ValidationMessage For="() => ExecutorItem.Surname" />
+        </div>
+        <div class="form-group d-flex justify-content-between m-2">
+            <label class="col-form-label col-3">Имя</label>
+            <InputText @bind-Value="ExecutorItem.Name" class="form-control" />
+            <ValidationMessage For="() => ExecutorItem.Name" />
+        </div>
+        <div class="form-group d-flex justify-content-between m-2">
+            <label class="col-form-label col-3">Отчество</label>
+            <InputText @bind-Value="ExecutorItem.Patronymic" class="form-control" />
+            <ValidationMessage For="() => ExecutorItem.Patronymic" />
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary m-2" type="submit">Сохранить</button>
+            <a class="btn btn-primary m-2" href="/">Отмена</a>
+        </div>
+    </EditForm>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [SupplyParameterFromForm]
+    ExecutorsItem? ExecutorItem { get; set; } = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        if (ExecutorItem == null)
+        {
+            ExecutorItem = new();
+            if (Id != 0)
+            {
+                var src = await data.GetExecutorAsync(Id);
+                ExecutorItem.Id = src.Id;
+                ExecutorItem.Surname = src.Surname;
+                ExecutorItem.Name = src.Name;
+                ExecutorItem.Patronymic = src.Patronymic;
+            }
+        }
+    }
+    async Task ValidSubmit()
+    {
+        await data.SaveAsync(ExecutorItem!);
+        navigate.NavigateTo("/executors");
+    }
+}
